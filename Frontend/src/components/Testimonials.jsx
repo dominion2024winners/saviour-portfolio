@@ -9,41 +9,22 @@ const readStorage = (key, fallback) => {
   }
 };
 
-const defaultTestimonials = [
-  {
-    id: "testimonial-1",
-    name: "Amelia Ross",
-    role: "Marketing Lead",
-    quote:
-      "The work was polished, strategic and delivered ahead of schedule. It gave our business the clarity and presence we needed.",
-    rating: 5,
-  },
-  {
-    id: "testimonial-2",
-    name: "Daniel King",
-    role: "Founder",
-    quote:
-      "From the strategy to the final design, every step felt considered and professional. The process was smooth from start to finish.",
-    rating: 5,
-  },
-  {
-    id: "testimonial-3",
-    name: "Chloe Martin",
-    role: "Brand Owner",
-    quote:
-      "The new identity and website have transformed how clients see our business. It feels elevated, modern and deeply aligned with our brand.",
-    rating: 5,
-  },
-];
+const readAdminTestimonials = () =>
+  readStorage("portfolioTestimonials", []).filter(
+    (testimonial) =>
+      !["testimonial-1", "testimonial-2", "testimonial-3"].includes(
+        testimonial.id
+      )
+  );
 
 function Testimonials() {
   const [testimonials, setTestimonials] = useState(() =>
-    readStorage("portfolioTestimonials", defaultTestimonials)
+    readAdminTestimonials()
   );
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
-    setTestimonials(readStorage("portfolioTestimonials", defaultTestimonials));
+    setTestimonials(readAdminTestimonials());
   }, []);
 
   return (

@@ -55,6 +55,8 @@ const defaultSiteSettings = {
     "I design and build modern websites, visual identities, digital experiences and creative solutions for brands, businesses and individuals.",
   email: "hello@yourdomain.com",
   phone: "+1 (555) 123-4567",
+  whatsapp: "",
+  bookingUrl: "",
   location: "Based in your city",
   primaryButton: "View My Work",
   secondaryButton: "Let's Work Together",
@@ -94,24 +96,13 @@ const defaultSkills = [
   "Git & GitHub",
 ];
 
-const defaultTestimonials = [
-  {
-    id: "testimonial-1",
-    name: "Client Name",
-    role: "Marketing Lead",
-    quote:
-      "The work was polished, strategic and delivered ahead of schedule.",
-    rating: 5,
-  },
-  {
-    id: "testimonial-2",
-    name: "Brand Owner",
-    role: "Founder",
-    quote:
-      "The new identity and website gave our business the presence it needed.",
-    rating: 5,
-  },
-];
+const readAdminTestimonials = () =>
+  readStoredValue(STORAGE_KEYS.testimonials, []).filter(
+    (testimonial) =>
+      !["testimonial-1", "testimonial-2", "testimonial-3"].includes(
+        testimonial.id
+      )
+  );
 
 const defaultBlogPosts = [
   {
@@ -227,7 +218,7 @@ function AdminDashboard() {
     readStoredValue(STORAGE_KEYS.skills, defaultSkills)
   );
   const [testimonials, setTestimonials] = useState(() =>
-    readStoredValue(STORAGE_KEYS.testimonials, defaultTestimonials)
+    readAdminTestimonials()
   );
   const [blogPosts, setBlogPosts] = useState(() =>
     readStoredValue(STORAGE_KEYS.blogPosts, defaultBlogPosts)
@@ -553,6 +544,61 @@ function AdminDashboard() {
     }
   };
 
+  const loadSiteSettings = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/settings`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to load website settings.");
+      }
+
+      setSiteSettings((current) => ({
+        ...current,
+        ...data.settings,
+      }));
+    } catch (err) {
+      console.error("Load site settings error:", err);
+    }
+  };
+
+  const saveSiteSettings = async () => {
+    const token = getToken();
+
+    if (!token) {
+      setError("Your admin session has expired. Please login again.");
+      return;
+    }
+
+    try {
+      setError("");
+      setMessage("");
+
+      const response = await fetch(`${API_URL}/api/settings`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(siteSettings),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to save website settings.");
+      }
+
+      setSiteSettings((current) => ({
+        ...current,
+        ...data.settings,
+      }));
+      setMessage("Website settings saved successfully.");
+    } catch (err) {
+      console.error("Save site settings error:", err);
+      setError(err.message || "Failed to save website settings.");
+    }
+  };
+
   // ============================================================
   // LOAD PROFILE
   // ============================================================
@@ -710,6 +756,7 @@ function AdminDashboard() {
 
   useEffect(() => {
     loadProjects();
+    loadSiteSettings();
     loadProfile();
     loadContacts();
     loadBlogPosts();
@@ -2619,6 +2666,36 @@ function AdminDashboard() {
                 }
               />
             </div>
+            <div className="form-group">
+              <label htmlFor="site-whatsapp">WhatsApp link</label>
+              <input
+                id="site-whatsapp"
+                type="url"
+                placeholder="https://wa.me/..."
+                value={siteSettings.whatsapp}
+                onChange={(event) =>
+                  setSiteSettings((current) => ({
+                    ...current,
+                    whatsapp: event.target.value,
+                  }))
+                }
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="site-booking-url">Book a call link</label>
+              <input
+                id="site-booking-url"
+                type="url"
+                placeholder="https://calendly.com/..."
+                value={siteSettings.bookingUrl}
+                onChange={(event) =>
+                  setSiteSettings((current) => ({
+                    ...current,
+                    bookingUrl: event.target.value,
+                  }))
+                }
+              />
+            </div>
 
             <div className="form-group full-width">
               <label>Website Access</label>
@@ -2635,6 +2712,11 @@ function AdminDashboard() {
                 </button>
               </div>
             </div>
+          </div>
+          <div className="admin-inline-actions">
+            <button type="button" className="project-submit" onClick={saveSiteSettings}>
+              Save website settings
+            </button>
           </div>
         </section>
 

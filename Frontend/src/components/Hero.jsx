@@ -96,6 +96,19 @@ function Hero() {
     });
 
     setSiteSettings(storedSettings);
+    fetch(`${API_URL}/api/settings`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.settings) {
+          setSiteSettings((current) => ({
+            ...current,
+            ...data.settings,
+          }));
+        }
+      })
+      .catch((error) => {
+        console.warn("Unable to load website settings.", error);
+      });
     loadProfile();
   }, []);
 

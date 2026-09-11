@@ -24,20 +24,30 @@ function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cvUrl, setCvUrl] = useState("");
   const [contactEmail, setContactEmail] = useState("");
+  const [whatsappUrl, setWhatsappUrl] = useState("");
+  const [bookingUrl, setBookingUrl] = useState("");
 
   useEffect(() => {
     let isMounted = true;
 
-    fetch(`${API_URL}/api/profile`)
-      .then((response) => response.json())
-      .then((data) => {
+    Promise.all([
+      fetch(`${API_URL}/api/profile`).then((response) => response.json()),
+      fetch(`${API_URL}/api/settings`).then((response) => response.json()),
+    ])
+      .then(([profileData, settingsData]) => {
         if (isMounted) {
-          setCvUrl(data.profile?.cvUrl || "");
-          setContactEmail(data.profile?.email || "");
+          setCvUrl(profileData.profile?.cvUrl || "");
+          setContactEmail(
+            settingsData.settings?.email ||
+              profileData.profile?.email ||
+              ""
+          );
+          setWhatsappUrl(settingsData.settings?.whatsapp || "");
+          setBookingUrl(settingsData.settings?.bookingUrl || "");
         }
       })
       .catch((error) => {
-        console.warn("Unable to load CV link.", error);
+        console.warn("Unable to load contact details.", error);
       });
 
     return () => {
@@ -187,8 +197,16 @@ function Contact() {
               </a>
             )}
             <div className="contact-quick-links">
-              <a href="https://wa.me/15551234567" target="_blank" rel="noreferrer">              {t("whatsapp")}</a>
-              <a href="https://calendly.com/" target="_blank" rel="noreferrer">              {t("bookCall")}</a>
+              {whatsappUrl && (
+                <a href={whatsappUrl} target="_blank" rel="noreferrer">
+                  {t("whatsapp")}
+                </a>
+              )}
+              {bookingUrl && (
+                <a href={bookingUrl} target="_blank" rel="noreferrer">
+                  {t("bookCall")}
+                </a>
+              )}
               {cvUrl && (
                 <a href={cvUrl} download>
                   {t("downloadCv")}

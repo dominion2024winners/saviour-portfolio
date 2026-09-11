@@ -31,6 +31,10 @@ router.get("/", async (req, res) => {
           heroTitle: "I create digital experiences that stand out.",
           heroDescription:
             "I design and build modern websites, visual identities, digital experiences and creative solutions for brands, businesses and individuals.",
+          email: "",
+          phone: "",
+          whatsapp: "",
+          bookingUrl: "",
         },
         message: "Database unavailable. Using default site settings.",
       });
@@ -53,6 +57,7 @@ router.get("/", async (req, res) => {
         websiteEnabled: settings.websiteEnabled !== false,
       },
     });
+
   } catch (error) {
     console.error(
       "Get site settings error:",
@@ -62,6 +67,52 @@ router.get("/", async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to load site settings.",
+    });
+  }
+});
+
+router.put("/", protect, adminOnly, async (req, res) => {
+  try {
+    const allowedFields = [
+      "brandName",
+      "title",
+      "heroTitle",
+      "heroDescription",
+      "email",
+      "phone",
+      "whatsapp",
+      "bookingUrl",
+    ];
+    const updates = {};
+
+    allowedFields.forEach((field) => {
+      if (typeof req.body?.[field] === "string") {
+        updates[field] = req.body[field].trim();
+      }
+    });
+
+    let settings = await SiteSettings.findOne();
+
+    if (!settings) {
+      settings = new SiteSettings();
+    }
+
+    Object.assign(settings, updates);
+    await settings.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Website settings saved successfully.",
+      settings: {
+        ...settings.toObject(),
+        websiteEnabled: settings.websiteEnabled !== false,
+      },
+    });
+  } catch (error) {
+    console.error("Update site settings error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to save website settings.",
     });
   }
 });
