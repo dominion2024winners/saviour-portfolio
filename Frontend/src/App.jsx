@@ -46,7 +46,10 @@ function ProtectedAdminRoute({ children }) {
 
 function App() {
   const [websiteEnabled, setWebsiteEnabled] = useState(true);
-  const [statusChecked, setStatusChecked] = useState(false);
+  const [statusChecked, setStatusChecked] = useState(() => {
+    const path = window.location.pathname;
+    return path.startsWith("/admin") || path === "/login";
+  });
 
   useEffect(() => {
     const storedTheme = localStorage.getItem("portfolioTheme") || "light";
