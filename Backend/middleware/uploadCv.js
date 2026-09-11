@@ -1,5 +1,7 @@
 const multer = require("multer");
 
+const MAX_CV_SIZE = 250 * 1024 * 1024;
+
 const allowedMimeTypes = [
   "application/pdf",
   "application/msword",
@@ -17,7 +19,7 @@ const uploadCv = multer({
     callback(new Error("Only PDF, DOC, and DOCX files are allowed."), false);
   },
   limits: {
-    fileSize: 10 * 1024 * 1024,
+    fileSize: MAX_CV_SIZE,
     files: 1,
   },
 });

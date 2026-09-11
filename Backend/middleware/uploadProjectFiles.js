@@ -1,5 +1,7 @@
 const multer = require("multer");
 
+const MAX_PROJECT_FILE_SIZE = 250 * 1024 * 1024;
+
 // ============================================================
 // MEMORY STORAGE
 // ============================================================
@@ -67,8 +69,8 @@ const uploadProjectFiles = multer({
   fileFilter,
 
   limits: {
-    // Maximum 50 MB per file
-    fileSize: 50 * 1024 * 1024,
+    // Maximum 250 MB per file
+    fileSize: MAX_PROJECT_FILE_SIZE,
 
     // Maximum 10 files per upload
     files: 10,

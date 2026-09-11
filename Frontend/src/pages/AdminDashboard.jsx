@@ -656,8 +656,8 @@ function AdminDashboard() {
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      setError("CV must not exceed 10MB.");
+    if (file.size > 250 * 1024 * 1024) {
+      setError("CV must not exceed 250MB.");
       event.target.value = "";
       return;
     }
@@ -1109,6 +1109,18 @@ function AdminDashboard() {
     );
 
     if (selectedFiles.length === 0) {
+      return;
+    }
+
+    const oversizedFile = selectedFiles.find(
+      (file) => file.size > 250 * 1024 * 1024
+    );
+
+    if (oversizedFile) {
+      setError(
+        `${oversizedFile.name} exceeds the 250MB per-file limit.`
+      );
+      event.target.value = "";
       return;
     }
 
@@ -3020,7 +3032,7 @@ function AdminDashboard() {
             </div>
 
             <small className="profile-image-help">
-              PDF, DOC or DOCX. Maximum 10MB.
+              PDF, DOC or DOCX. Maximum 250MB.
             </small>
           </div>
 
@@ -3483,7 +3495,7 @@ function AdminDashboard() {
               <p className="project-upload-help">
                 Upload files visitors can download.
                 You can select multiple files.
-                Maximum 10 files per upload.
+                Maximum 250MB per file and 10 files per upload.
               </p>
 
               {projectFiles.length > 0 && (
