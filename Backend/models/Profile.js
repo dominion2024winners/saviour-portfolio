@@ -11,6 +11,26 @@ const profileSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+
+    cvUrl: {
+      type: String,
+      default: "",
+    },
+
+    cvPublicId: {
+      type: String,
+      default: "",
+    },
+
+    cvName: {
+      type: String,
+      default: "",
+    },
+
+    email: {
+      type: String,
+      default: "",
+    },
   },
   {
     timestamps: true,

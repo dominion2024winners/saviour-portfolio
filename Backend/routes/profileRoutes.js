@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const Profile = require("../models/Profile");
 const cloudinary = require("../config/cloudinary");
 const uploadProfileImage = require("../middleware/uploadProfileImage");
+const uploadCv = require("../middleware/uploadCv");
 
 const {
   protect,
@@ -25,6 +26,10 @@ router.get("/", async (req, res) => {
         profile: {
           profileImage: "",
           profileImagePublicId: "",
+          cvUrl: "",
+          cvPublicId: "",
+          cvName: "",
+          email: "",
         },
         message: "Database unavailable. Using empty profile state.",
       });
@@ -36,6 +41,10 @@ router.get("/", async (req, res) => {
       profile = await Profile.create({
         profileImage: "",
         profileImagePublicId: "",
+        cvUrl: "",
+        cvPublicId: "",
+        cvName: "",
+        email: "",
       });
     }
 
@@ -183,6 +192,155 @@ router.put(
     }
   }
 );
+
+router.put("/details", protect, adminOnly, async (req, res) => {
+  try {
+    const email = String(req.body.email || "").trim();
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "A profile email is required.",
+      });
+    }
+
+    let profile = await Profile.findOne();
+
+    if (!profile) {
+      profile = new Profile();
+    }
+
+    profile.email = email;
+    await profile.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Profile email saved successfully.",
+      profile,
+    });
+  } catch (error) {
+    console.error("Profile details update error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to save profile email.",
+    });
+  }
+});
+
+/*
+============================================================
+UPLOAD / REPLACE CV
+============================================================
+*/
+
+router.put(
+  "/cv",
+  protect,
+  adminOnly,
+  uploadCv.single("cv"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: "Please select a CV file.",
+        });
+      }
+
+      let profile = await Profile.findOne();
+
+      if (!profile) {
+        profile = new Profile();
+      }
+
+      if (profile.cvPublicId) {
+        await cloudinary.uploader.destroy(profile.cvPublicId, {
+          resource_type: "raw",
+        });
+      }
+
+      const uploadResult = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            folder: "portfolio/profile",
+            resource_type: "raw",
+            public_id: `cv-${Date.now()}`,
+            use_filename: false,
+          },
+          (error, result) => {
+            if (error) {
+              reject(error);
+              return;
+            }
+
+            resolve(result);
+          }
+        );
+
+        uploadStream.end(req.file.buffer);
+      });
+
+      profile.cvUrl = uploadResult.secure_url;
+      profile.cvPublicId = uploadResult.public_id;
+      profile.cvName = req.file.originalname;
+      await profile.save();
+
+      res.status(200).json({
+        success: true,
+        message: "CV uploaded successfully.",
+        profile,
+      });
+    } catch (error) {
+      console.error("CV upload error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to upload CV.",
+      });
+    }
+  }
+);
+
+/*
+============================================================
+REMOVE CV
+============================================================
+*/
+
+router.delete("/cv", protect, adminOnly, async (req, res) => {
+  try {
+    const profile = await Profile.findOne();
+
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        message: "Profile not found.",
+      });
+    }
+
+    if (profile.cvPublicId) {
+      await cloudinary.uploader.destroy(profile.cvPublicId, {
+        resource_type: "raw",
+      });
+    }
+
+    profile.cvUrl = "";
+    profile.cvPublicId = "";
+    profile.cvName = "";
+    await profile.save();
+
+    res.status(200).json({
+      success: true,
+      message: "CV removed successfully.",
+      profile,
+    });
+  } catch (error) {
+    console.error("CV removal error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to remove CV.",
+    });
+  }
+});
 
 /*
 ============================================================

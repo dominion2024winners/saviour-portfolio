@@ -282,6 +282,10 @@ function AdminDashboard() {
   const [profileImageFile, setProfileImageFile] = useState(null);
   const [profileImageLoading, setProfileImageLoading] =
     useState(false);
+  const [cvUrl, setCvUrl] = useState("");
+  const [cvName, setCvName] = useState("");
+  const [cvFile, setCvFile] = useState(null);
+  const [cvLoading, setCvLoading] = useState(false);
 
   // ============================================================
   // GENERAL MESSAGES
@@ -295,6 +299,7 @@ function AdminDashboard() {
   // ============================================================
 
   const profileImageInputRef = useRef(null);
+  const cvInputRef = useRef(null);
   const fileInputRef = useRef(null);
 
   // ============================================================
@@ -568,9 +573,134 @@ function AdminDashboard() {
 
       const nextProfileImage = data.profile?.profileImage || "";
       setProfileImage(nextProfileImage);
+      setCvUrl(data.profile?.cvUrl || "");
+      setCvName(data.profile?.cvName || "");
+      if (data.profile?.email) {
+        setProfileDetails((current) => ({
+          ...current,
+          email: data.profile.email,
+        }));
+        setProfileForm((current) => ({
+          ...current,
+          email: data.profile.email,
+        }));
+      }
       localStorage.setItem("portfolioProfileImage", JSON.stringify(nextProfileImage));
     } catch (err) {
       console.error("Load profile error:", err);
+    }
+  };
+
+  const handleCvChange = (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const allowedTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      setError("Please select a PDF, DOC, or DOCX file.");
+      event.target.value = "";
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setError("CV must not exceed 10MB.");
+      event.target.value = "";
+      return;
+    }
+
+    setCvFile(file);
+    setMessage("");
+    setError("");
+  };
+
+  const handleCvUpload = async () => {
+    if (!cvFile) {
+      setError("Please select a CV file first.");
+      return;
+    }
+
+    const token = getToken();
+
+    if (!token) {
+      setError("Your admin session has expired. Please login again.");
+      return;
+    }
+
+    try {
+      setCvLoading(true);
+      setMessage("");
+      setError("");
+
+      const formData = new FormData();
+      formData.append("cv", cvFile);
+
+      const response = await fetch(`${API_URL}/api/profile/cv`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to upload CV.");
+      }
+
+      setCvUrl(data.profile?.cvUrl || "");
+      setCvName(data.profile?.cvName || cvFile.name);
+      setCvFile(null);
+      if (cvInputRef.current) {
+        cvInputRef.current.value = "";
+      }
+      setMessage("CV uploaded successfully.");
+    } catch (err) {
+      console.error("CV upload error:", err);
+      setError(err.message || "Failed to upload CV.");
+    } finally {
+      setCvLoading(false);
+    }
+  };
+
+  const handleRemoveCv = async () => {
+    if (!window.confirm("Are you sure you want to remove your CV?")) {
+      return;
+    }
+
+    const token = getToken();
+
+    if (!token) {
+      setError("Your admin session has expired. Please login again.");
+      return;
+    }
+
+    try {
+      setCvLoading(true);
+      const response = await fetch(`${API_URL}/api/profile/cv`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to remove CV.");
+      }
+
+      setCvUrl("");
+      setCvName("");
+      setCvFile(null);
+      setMessage("CV removed successfully.");
+    } catch (err) {
+      console.error("CV removal error:", err);
+      setError(err.message || "Failed to remove CV.");
+    } finally {
+      setCvLoading(false);
     }
   };
 
@@ -1412,14 +1542,34 @@ function AdminDashboard() {
     }));
   };
 
-  const saveProfileDetails = () => {
+  const saveProfileDetails = async () => {
     const cleanedProfile = {
       ...defaultProfileData,
       ...profileForm,
     };
 
-    setProfileDetails(cleanedProfile);
-    setMessage("Profile details saved successfully.");
+    try {
+      const token = getToken();
+      const response = await fetch(`${API_URL}/api/profile/details`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ email: cleanedProfile.email }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to save profile email.");
+      }
+
+      setProfileDetails(cleanedProfile);
+      setMessage("Profile details saved successfully.");
+    } catch (err) {
+      console.error("Save profile details error:", err);
+      setError(err.message || "Failed to save profile details.");
+    }
     setError("");
   };
 
@@ -2731,6 +2881,65 @@ function AdminDashboard() {
 
             </div>
 
+          </div>
+
+          <div className="cv-upload-manager">
+            <div>
+              <span className="cv-upload-eyebrow">RESUME</span>
+              <h3>Curriculum Vitae</h3>
+              <p>Upload the CV visitors can download from your portfolio.</p>
+            </div>
+
+            {cvUrl && (
+              <a
+                className="cv-current-link"
+                href={cvUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {cvName || "View current CV"}
+              </a>
+            )}
+
+            <input
+              ref={cvInputRef}
+              type="file"
+              accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              onChange={handleCvChange}
+            />
+
+            {cvFile && (
+              <div className="profile-selected-file">
+                <strong>{cvFile.name}</strong>
+                <span>{formatFileSize(cvFile.size)}</span>
+              </div>
+            )}
+
+            <div className="cv-upload-actions">
+              <button
+                type="button"
+                className="profile-upload-button"
+                onClick={handleCvUpload}
+                disabled={cvLoading || !cvFile}
+              >
+                {cvLoading ? "Saving..." : cvUrl ? "Replace CV" : "Upload CV"}
+              </button>
+
+              {cvUrl && (
+                <button
+                  type="button"
+                  className="profile-remove-button"
+                  onClick={handleRemoveCv}
+                  disabled={cvLoading}
+                >
+                  Remove CV
+                </button>
+              )}
+            </div>
+
+            <small className="profile-image-help">
+              PDF, DOC or DOCX. Maximum 10MB.
+            </small>
           </div>
 
           <div className="admin-form-grid profile-fields">

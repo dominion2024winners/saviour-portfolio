@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./contact.css";
 import { trackAnalyticsEvent } from "../utils/analytics";
 import { useTranslation } from "../utils/i18n";
@@ -22,6 +22,28 @@ function Contact() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [cvUrl, setCvUrl] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    fetch(`${API_URL}/api/profile`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (isMounted) {
+          setCvUrl(data.profile?.cvUrl || "");
+          setContactEmail(data.profile?.email || "");
+        }
+      })
+      .catch((error) => {
+        console.warn("Unable to load CV link.", error);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // =========================================================
   // HANDLE INPUT CHANGES
@@ -117,7 +139,7 @@ function Contact() {
       setStatus({
         type: "error",
         message: isNetworkFailure
-          ? "The contact form is temporarily unavailable because the server is offline. Please email hello@example.com and I’ll get back to you as soon as it’s back online."
+          ? "The contact form is temporarily unavailable because the server is offline. Please try again later."
           : error.message ||
             "Something went wrong. Please try again.",
       });
@@ -156,16 +178,22 @@ function Contact() {
               back to you with the next steps.
             </p>
 
-            <a
-              href="mailto:hello@example.com"
-              className="contact-email"
-            >
-              hello@example.com
-            </a>
+            {contactEmail && (
+              <a
+                href={`mailto:${contactEmail}`}
+                className="contact-email"
+              >
+                {contactEmail}
+              </a>
+            )}
             <div className="contact-quick-links">
               <a href="https://wa.me/15551234567" target="_blank" rel="noreferrer">              {t("whatsapp")}</a>
               <a href="https://calendly.com/" target="_blank" rel="noreferrer">              {t("bookCall")}</a>
-              <a href="/resume.pdf" download>              {t("downloadCv")}</a>
+              {cvUrl && (
+                <a href={cvUrl} download>
+                  {t("downloadCv")}
+                </a>
+              )}
             </div>
 
           </div>
