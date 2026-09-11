@@ -72,8 +72,8 @@ const uploadProjectFiles = multer({
     // Maximum 250 MB per file
     fileSize: MAX_PROJECT_FILE_SIZE,
 
-    // Maximum 10 files per upload
-    files: 10,
+    // Maximum 50 files per upload
+    files: 50,
   },
 });
 

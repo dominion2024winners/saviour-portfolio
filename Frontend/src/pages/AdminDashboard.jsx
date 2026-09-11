@@ -1130,12 +1130,12 @@ function AdminDashboard() {
         ...selectedFiles,
       ];
 
-      if (combinedFiles.length > 10) {
+      if (combinedFiles.length > 50) {
         setError(
-          "You can upload a maximum of 10 files at a time."
+          "You can upload a maximum of 50 files at a time."
         );
 
-        return combinedFiles.slice(0, 10);
+        return combinedFiles.slice(0, 50);
       }
 
       return combinedFiles;
@@ -3495,7 +3495,7 @@ function AdminDashboard() {
               <p className="project-upload-help">
                 Upload files visitors can download.
                 You can select multiple files.
-                Maximum 250MB per file and 10 files per upload.
+                Maximum 250MB per file and 50 files per upload.
               </p>
 
               {projectFiles.length > 0 && (
