@@ -35,6 +35,9 @@ const analyticsRoutes = require("./routes/analyticsRoutes");
 const newsletterRoutes = require("./routes/newsletterRoutes");
 
 const PORT = process.env.PORT || 5000;
+const frontendUrl = (
+  process.env.FRONTEND_URL || "http://localhost:5173"
+).replace(/\/+$/, "");
 
 // ============================================================
 // CORS
@@ -42,7 +45,7 @@ const PORT = process.env.PORT || 5000;
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: frontendUrl,
     credentials: true,
   })
 );
@@ -78,8 +81,6 @@ app.use((req, res, next) => {
 // ============================================================
 // API ROUTES
 // ============================================================
-
-const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
 
 app.get("/admin", (req, res) => {
   res.redirect(new URL("/admin", frontendUrl).toString());
