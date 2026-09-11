@@ -1,0 +1,230 @@
+.project-detail-page {
+  min-height: 100vh;
+  padding: 64px 20px 80px;
+  background: linear-gradient(180deg, #eef8ff 0%, #ffffff 100%);
+}
+
+.project-detail-shell {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+}
+
+.project-detail-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 22px;
+  color: #0b2f6a;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.project-detail-card {
+  overflow: hidden;
+  border: 1px solid #dfeaf3;
+  border-radius: 26px;
+  background: #ffffff;
+  box-shadow: 0 20px 50px rgba(11, 47, 106, 0.08);
+}
+
+.project-detail-image {
+  display: block;
+  width: 100%;
+  height: 420px;
+  object-fit: cover;
+  background: #edf5fb;
+}
+
+.project-detail-image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 420px;
+  background: linear-gradient(135deg, #dff6ff, #eef8ff);
+  color: #0b2f6a;
+}
+
+.project-detail-image-placeholder span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #ffffff;
+  font-size: 56px;
+  font-weight: 800;
+  box-shadow: 0 18px 40px rgba(11, 47, 106, 0.12);
+}
+
+.project-detail-body {
+  padding: 34px 30px 38px;
+}
+
+.project-detail-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: #eaf8ff;
+  color: #007eaf;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+}
+
+.project-detail-body h1 {
+  margin: 18px 0 12px;
+  color: #0b2f6a;
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  line-height: 1.1;
+}
+
+.project-detail-description {
+  margin: 0;
+  color: #495d78;
+  font-size: 1.04rem;
+  line-height: 1.8;
+}
+
+.project-case-study {
+  margin-top: 28px;
+  padding: 22px;
+  border-left: 3px solid #02adec;
+  border-radius: 12px;
+  background: #f4fbff;
+}
+
+.project-case-study h2 {
+  margin-bottom: 12px;
+  color: #0b2f6a;
+  font-size: 1.05rem;
+}
+
+.project-case-study p {
+  margin: 8px 0 0;
+  color: #495d78;
+  line-height: 1.7;
+}
+
+.project-detail-techs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.project-detail-techs span {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #edf9fd;
+  color: #0b2f6a;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.project-detail-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.project-detail-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.project-detail-link:hover {
+  transform: translateY(-1px);
+}
+
+.project-detail-link.primary {
+  border: 1px solid #02adec;
+  background: #02adec;
+  color: #ffffff;
+}
+
+.project-detail-link.secondary {
+  border: 1px solid #dfeaf3;
+  background: #ffffff;
+  color: #0b2f6a;
+}
+
+.project-detail-files {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid #edf3f7;
+}
+
+.project-detail-files h2 {
+  margin: 0 0 12px;
+  color: #0b2f6a;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.project-detail-files ul {
+  margin: 0;
+  padding-left: 18px;
+  color: #495d78;
+}
+
+.project-detail-files li + li {
+  margin-top: 8px;
+}
+
+.project-detail-files a {
+  color: #02adec;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.project-detail-loading,
+.project-detail-not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  color: #0b2f6a;
+}
+
+.project-detail-not-found h1 {
+  margin: 12px 0 10px;
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.project-detail-not-found p {
+  max-width: 560px;
+  color: #495d78;
+  line-height: 1.7;
+}
+
+@media (max-width: 768px) {
+  .project-detail-page {
+    padding-top: 36px;
+  }
+
+  .project-detail-body {
+    padding: 24px 20px 28px;
+  }
+
+  .project-detail-image,
+  .project-detail-image-placeholder {
+    height: 280px;
+  }
+}
