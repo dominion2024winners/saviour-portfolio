@@ -79,6 +79,16 @@ app.use((req, res, next) => {
 // API ROUTES
 // ============================================================
 
+const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+
+app.get("/admin", (req, res) => {
+  res.redirect(new URL("/admin", frontendUrl).toString());
+});
+
+app.get("/admin/login", (req, res) => {
+  res.redirect(new URL("/admin/login", frontendUrl).toString());
+});
+
 // Authentication
 app.use("/api/auth", authRoutes);
 
