@@ -11,6 +11,7 @@ const CATEGORY_ORDER = [
   "Web Development",
   "Graphic Design",
   "Branding",
+  "Logo",
   "Digital Marketing",
   "Mobile Development",
   "Other",

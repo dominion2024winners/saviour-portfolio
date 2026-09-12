@@ -3345,6 +3345,10 @@ function AdminDashboard() {
                     Branding
                   </option>
 
+                  <option value="Logo">
+                    Logo
+                  </option>
+
                   <option value="Digital Marketing">
                     Digital Marketing
                   </option>
