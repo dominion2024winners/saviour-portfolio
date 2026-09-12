@@ -152,8 +152,8 @@
   overflow: hidden;
   width: calc(100% - 20px);
   margin: 10px 10px 0;
-  aspect-ratio: 16 / 10;
-  min-height: 190px;
+  aspect-ratio: 16 / 8;
+  min-height: 150px;
   border-radius: 17px;
   background:
     linear-gradient(135deg, rgba(2, 173, 236, 0.18), transparent 55%),
@@ -261,15 +261,15 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  padding: 22px 23px 24px;
+  padding: 17px 20px 19px;
 }
 
 .project-card-content h4 {
-  margin: 0 0 10px;
+  margin: 0 0 7px;
 
   color: #0b2f6a;
 
-  font-size: 21px;
+  font-size: 19px;
   font-weight: 800;
 
   line-height: 1.25;
@@ -288,7 +288,7 @@
   line-height: 1.7;
 
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 3;
 }
 
 /* ============================================================
