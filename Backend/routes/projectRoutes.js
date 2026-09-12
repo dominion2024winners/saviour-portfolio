@@ -201,6 +201,73 @@ router.get("/:projectId/files/:fileId/download", async (req, res) => {
   }
 });
 
+router.get("/:projectId/files/:fileId/view", async (req, res) => {
+  try {
+    if (
+      mongoose.connection.readyState !== 1 ||
+      !mongoose.isValidObjectId(req.params.projectId) ||
+      !mongoose.isValidObjectId(req.params.fileId)
+    ) {
+      return res.status(404).json({
+        success: false,
+        message: "Project file not found.",
+      });
+    }
+
+    const project = await Project.findOne({
+      _id: req.params.projectId,
+      published: true,
+      "files._id": req.params.fileId,
+    }).select("files");
+
+    const file = project?.files.id(req.params.fileId);
+
+    if (!file?.url) {
+      return res.status(404).json({
+        success: false,
+        message: "Project file not found.",
+      });
+    }
+
+    const upstream = await fetch(file.url);
+
+    if (!upstream.ok || !upstream.body) {
+      return res.status(502).json({
+        success: false,
+        message: "Project file is temporarily unavailable.",
+      });
+    }
+
+    const safeName = (file.name || "project-file")
+      .replace(/["\r\n]/g, "")
+      .trim() || "project-file";
+
+    res.setHeader(
+      "Content-Disposition",
+      `inline; filename="${safeName}"`
+    );
+    res.setHeader(
+      "Content-Type",
+      file.type || upstream.headers.get("content-type") || "application/octet-stream"
+    );
+
+    const contentLength = upstream.headers.get("content-length");
+
+    if (contentLength) {
+      res.setHeader("Content-Length", contentLength);
+    }
+
+    return Readable.fromWeb(upstream.body).pipe(res);
+  } catch (error) {
+    console.error("View project file error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to open project file.",
+    });
+  }
+});
+
 router.get("/:id", async (req, res) => {
   try {
     if (mongoose.connection.readyState !== 1) {

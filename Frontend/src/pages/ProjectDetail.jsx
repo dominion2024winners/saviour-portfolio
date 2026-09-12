@@ -14,6 +14,14 @@ const readStorage = (key, fallback) => {
   }
 };
 
+const isImageFile = (file) => {
+  if (file?.type?.startsWith("image/")) {
+    return true;
+  }
+
+  return /\.(jpe?g|png|webp|gif)(?:[?#]|$)/i.test(file?.name || file?.url || "");
+};
+
 function ProjectDetail() {
   const { projectId } = useParams();
   const [project, setProject] = useState(null);
@@ -113,15 +121,18 @@ function ProjectDetail() {
         </Link>
 
         <article className="project-detail-card">
-          {project.image ? (
+          {project.image || project.files?.find(isImageFile)?.url ? (
             <img
-              src={project.image}
+              src={project.image || project.files.find(isImageFile).url}
               alt={project.title}
               className="project-detail-image"
             />
           ) : (
             <div className="project-detail-image-placeholder">
-              <span>{project.title?.charAt(0)?.toUpperCase() || "P"}</span>
+              <span className="project-detail-file-preview">
+                <strong>{project.title?.charAt(0)?.toUpperCase() || "P"}</strong>
+                {project.files?.[0]?.name && <small>{project.files[0].name}</small>}
+              </span>
             </div>
           )}
 
@@ -180,19 +191,32 @@ function ProjectDetail() {
                 <ul>
                   {project.files.map((file) => (
                     <li key={file._id || file.publicId || file.url}>
-                      <a
-                        href={
-                          file._id && project._id
-                            ? `${API_URL}/api/projects/${project._id}/files/${file._id}/download`
-                            : file.url
-                        }
-                        download={file._id && project._id ? undefined : file.name}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label={`Download ${file.name}`}
-                      >
-                        {file.name}
-                      </a>
+                      <span className="project-detail-file-actions">
+                        <a
+                          href={
+                            file._id && project._id
+                              ? `${API_URL}/api/projects/${project._id}/files/${file._id}/view`
+                              : file.url
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Open {file.name}
+                        </a>
+                        <a
+                          href={
+                            file._id && project._id
+                              ? `${API_URL}/api/projects/${project._id}/files/${file._id}/download`
+                              : file.url
+                          }
+                          download={file._id && project._id ? undefined : file.name}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={`Download ${file.name}`}
+                        >
+                          Download
+                        </a>
+                      </span>
                     </li>
                   ))}
                 </ul>

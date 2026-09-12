@@ -7,6 +7,7 @@ const API_URL =
   import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const CATEGORY_ORDER = [
+  "All",
   "Web Development",
   "Graphic Design",
   "Branding",
@@ -22,6 +23,14 @@ const readStorage = (key, fallback) => {
   } catch (error) {
     return fallback;
   }
+};
+
+const isImageFile = (file) => {
+  if (file?.type?.startsWith("image/")) {
+    return true;
+  }
+
+  return /\.(jpe?g|png|webp|gif)(?:[?#]|$)/i.test(file?.name || file?.url || "");
 };
 
 function Projects() {
@@ -76,7 +85,7 @@ function Projects() {
   }, []);
 
   // ============================================================
-  // GROUP PROJECTS BY CATEGORY
+  // BUILD FILTER OPTIONS
   // ============================================================
 
   const categories = useMemo(
@@ -112,20 +121,7 @@ function Projects() {
   }, [projects, query, categoryFilter, technologyFilter]);
 
   const projectsByCategory = useMemo(() => {
-    const grouped = {};
-
-    filteredProjects.forEach((project) => {
-      const category =
-        project.category?.trim() || "Other";
-
-      if (!grouped[category]) {
-        grouped[category] = [];
-      }
-
-      grouped[category].push(project);
-    });
-
-    return grouped;
+    return { All: filteredProjects };
   }, [filteredProjects]);
 
   // ============================================================
@@ -257,7 +253,7 @@ function Projects() {
                * First display categories in the predefined
                * order used by the admin dashboard.
                */}
-              {[...CATEGORY_ORDER, ...categories.filter((category) => !CATEGORY_ORDER.includes(category))].map((category) => {
+              {["All"].map((category) => {
                 const categoryProjects =
                   projectsByCategory[category];
 
@@ -285,9 +281,7 @@ function Projects() {
                           CATEGORY
                         </span>
 
-                        <h3>
-                          {category}
-                        </h3>
+                        <h3>All Projects</h3>
                       </div>
 
                       <span className="project-category-count">
@@ -314,20 +308,25 @@ function Projects() {
 
                             <div className="project-card-image-wrapper">
 
-                              {project.image ? (
+                                {project.image || project.files?.find(isImageFile)?.url ? (
                                 <img
-                                  src={project.image}
+                                    src={project.image || project.files.find(isImageFile).url}
                                   alt={project.title}
                                   className="project-card-image"
                                   loading="lazy"
                                 />
                               ) : (
                                 <div className="project-card-image-placeholder">
-                                  <span>
-                                    {project.title
-                                      ?.charAt(0)
-                                      ?.toUpperCase() ||
-                                      "P"}
+                                  <span className="project-card-file-preview">
+                                    <strong>
+                                      {project.title
+                                        ?.charAt(0)
+                                        ?.toUpperCase() ||
+                                        "P"}
+                                    </strong>
+                                    {project.files?.[0]?.name && (
+                                      <small>{project.files[0].name}</small>
+                                    )}
                                   </span>
                                 </div>
                               )}
@@ -429,30 +428,48 @@ function Projects() {
 
                                     {project.files.map(
                                       (file) => (
-                                        <a
+                                      <span
                                           key={
                                             file._id ||
                                             file.publicId ||
                                             file.url
                                           }
+                                        className="project-download-item"
+                                      >
+                                        {file._id && project._id ? (
+                                          <a
+                                            href={`${API_URL}/api/projects/${project._id}/files/${file._id}/view`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="project-download-link"
+                                          >
+                                            Open {file.name}
+                                          </a>
+                                        ) : (
+                                          <a
+                                            href={file.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="project-download-link"
+                                          >
+                                            Open {file.name}
+                                          </a>
+                                        )}
+                                        <a
                                           href={
                                             file._id && project._id
                                               ? `${API_URL}/api/projects/${project._id}/files/${file._id}/download`
                                               : file.url
                                           }
-                                          download={
-                                            file._id && project._id
-                                              ? undefined
-                                              : file.name
-                                          }
+                                          download={file._id && project._id ? undefined : file.name}
                                           target="_blank"
                                           rel="noopener noreferrer"
-                                          className="project-download-link"
-                                          aria-label={`Download ${file.name}`}
+                                          className="project-download-link project-download-link-secondary"
                                         >
-                                          {file.name}
+                                          Download
                                         </a>
-                                      )
+                                      </span>
+                                    )
                                     )}
 
                                   </div>
