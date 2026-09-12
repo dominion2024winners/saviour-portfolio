@@ -122,22 +122,25 @@
 ============================================================ */
 
 .project-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid #e1e8ef;
-  border-radius: 18px;
-  background: #ffffff;
-  box-shadow: 0 10px 30px rgba(11, 47, 106, 0.06);
+  border: 1px solid rgba(11, 47, 106, 0.1);
+  border-radius: 24px;
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbfe 100%);
+  box-shadow: 0 16px 34px rgba(11, 47, 106, 0.08);
 
   transition:
     transform 0.25s ease,
+    border-color 0.25s ease,
     box-shadow 0.25s ease;
 }
 
 .project-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 18px 40px rgba(11, 47, 106, 0.12);
+  border-color: rgba(2, 173, 236, 0.5);
+  box-shadow: 0 24px 48px rgba(11, 47, 106, 0.15);
 }
 
 /* ============================================================
@@ -147,12 +150,14 @@
 .project-card-image-wrapper {
   position: relative;
   overflow: hidden;
-  width: 100%;
+  width: calc(100% - 20px);
+  margin: 10px 10px 0;
   aspect-ratio: 16 / 10;
   min-height: 190px;
+  border-radius: 17px;
   background:
-    linear-gradient(135deg, rgba(2, 173, 236, 0.08), transparent 55%),
-    #edf2f6;
+    linear-gradient(135deg, rgba(2, 173, 236, 0.18), transparent 55%),
+    #eaf3f8;
 }
 
 .project-card-image {
@@ -256,15 +261,15 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  padding: 21px;
+  padding: 22px 23px 24px;
 }
 
 .project-card-content h4 {
-  margin: 0 0 9px;
+  margin: 0 0 10px;
 
   color: #0b2f6a;
 
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 800;
 
   line-height: 1.25;
@@ -300,11 +305,12 @@
 }
 
 .project-technologies span {
-  padding: 6px 9px;
+  padding: 7px 10px;
 
-  border-radius: 7px;
+  border: 1px solid #dcecf3;
+  border-radius: 999px;
 
-  background: #edf9fd;
+  background: #f2fbfe;
 
   color: #0b2f6a;
 

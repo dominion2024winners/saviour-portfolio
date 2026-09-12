@@ -210,7 +210,7 @@
    SKILL NAME
    ============================================================ */
 
-.skill-card h3 {
+.skills-section .skill-card h3 {
   position: relative;
   z-index: 2;
 
