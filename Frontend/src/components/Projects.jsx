@@ -183,6 +183,20 @@ function Projects() {
           </select>
         </div>
 
+        <div className="project-category-filters" aria-label="Filter projects by category">
+          {categories.map((category) => (
+            <button
+              type="button"
+              key={category}
+              className={categoryFilter === category ? "active" : ""}
+              onClick={() => setCategoryFilter(category)}
+              aria-pressed={categoryFilter === category}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
+
         {/* ======================================================
             LOADING
         ====================================================== */}
@@ -338,13 +352,13 @@ function Projects() {
 
                             <div className="project-card-content">
 
-                              <div className="project-card-category">
-                                {project.category || "Project"}
-                              </div>
-
                               <h4>
                                 {project.title}
                               </h4>
+
+                              <div className="project-card-category">
+                                {project.clientType || "Project"}
+                              </div>
 
                               <p>
                                 {project.description}
@@ -572,13 +586,13 @@ function Projects() {
 
                               <div className="project-card-content">
 
-                                <div className="project-card-category">
-                                  {project.category || "Project"}
-                                </div>
-
                                 <h4>
                                   {project.title}
                                 </h4>
+
+                                <div className="project-card-category">
+                                  {project.clientType || "Project"}
+                                </div>
 
                                 <p>
                                   {project.description}
