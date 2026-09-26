@@ -332,15 +332,15 @@ function Projects() {
                                 </div>
                               )}
 
-                              <div className="project-card-category">
-                                {project.category}
-                              </div>
-
                             </div>
 
                             {/* PROJECT CONTENT */}
 
                             <div className="project-card-content">
+
+                              <div className="project-card-category">
+                                {project.category || "Project"}
+                              </div>
 
                               <h4>
                                 {project.title}
@@ -568,13 +568,13 @@ function Projects() {
                                   </div>
                                 )}
 
-                                <div className="project-card-category">
-                                  {project.category}
-                                </div>
-
                               </div>
 
                               <div className="project-card-content">
+
+                                <div className="project-card-category">
+                                  {project.category || "Project"}
+                                </div>
 
                                 <h4>
                                   {project.title}
