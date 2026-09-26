@@ -787,7 +787,6 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  aspect-ratio: 540 / 760;
   max-width: 540px;
   border: 0;
   border-radius: 18px;
@@ -797,15 +796,16 @@
 
 .project-card-image-wrapper {
   width: 100%;
-  height: 55%;
+  height: auto;
   min-height: 0;
   margin: 0;
-  aspect-ratio: auto;
+  aspect-ratio: 540 / 430;
   border-radius: 0;
   background: #edf2f6;
 }
 
 .project-card-image {
+  height: 100%;
   padding: 0;
   object-fit: contain;
   background: #edf2f6;
@@ -920,12 +920,10 @@
 
 @media (max-width: 700px) {
   .project-card {
-    aspect-ratio: auto;
+    width: 100%;
   }
 
   .project-card-image-wrapper {
-    height: auto;
-    min-height: 0;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 540 / 430;
   }
 }
