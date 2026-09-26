@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import "./Projects.css";
 import { useTranslation } from "../utils/i18n";
 
@@ -388,17 +387,8 @@ function Projects() {
 
                               {/* LINKS */}
 
-                              {(project.liveUrl ||
-                                project.githubUrl ||
-                                project._id) && (
+                              {(project.liveUrl || project.githubUrl) && (
                                 <div className="project-card-links">
-
-                                  <Link
-                                    to={`/projects/${project._id || project.id}`}
-                                    className="project-card-link tertiary"
-                                  >
-                                    Details
-                                  </Link>
 
                                   {project.liveUrl && (
                                     <a
@@ -458,7 +448,7 @@ function Projects() {
                                             rel="noopener noreferrer"
                                             className="project-download-link"
                                           >
-                                            Open {file.name}
+                                            View File
                                           </a>
                                         ) : (
                                           <a
@@ -467,7 +457,7 @@ function Projects() {
                                             rel="noopener noreferrer"
                                             className="project-download-link"
                                           >
-                                            Open {file.name}
+                                            View File
                                           </a>
                                         )}
                                         <a
@@ -620,17 +610,8 @@ function Projects() {
                                   </div>
                                 )}
 
-                                {(project.liveUrl ||
-                                  project.githubUrl ||
-                                  project._id) && (
+                                {(project.liveUrl || project.githubUrl) && (
                                   <div className="project-card-links">
-
-                                    <Link
-                                      to={`/projects/${project._id || project.id}`}
-                                      className="project-card-link tertiary"
-                                    >
-                                      Details
-                                    </Link>
 
                                     {project.liveUrl && (
                                       <a
