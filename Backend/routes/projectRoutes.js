@@ -89,7 +89,10 @@ const parseTechnologies = (technologies) => {
 };
 
 const handleProjectFileUpload = (req, res, next) => {
-  uploadProjectFiles.array("projectFiles", 10)(
+  uploadProjectFiles.fields([
+    { name: "projectFiles", maxCount: 10 },
+    { name: "projectImage", maxCount: 1 },
+  ])(
     req,
     res,
     (error) => {
@@ -402,16 +405,16 @@ router.post(
       }
 
       const files = [];
+      const projectImage = req.files?.projectImage?.[0];
 
       /*
        * Upload selected project files
        */
 
       if (
-        req.files &&
-        req.files.length > 0
+        req.files?.projectFiles?.length > 0
       ) {
-        for (const file of req.files) {
+        for (const file of req.files.projectFiles) {
           const result =
             await uploadToCloudinary(file);
 
@@ -430,6 +433,10 @@ router.post(
           technologies
         );
 
+      const imageUpload = projectImage
+        ? await uploadToCloudinary(projectImage)
+        : null;
+
       const project =
         await Project.create({
           title: title.trim(),
@@ -443,10 +450,7 @@ router.post(
           technologies:
             technologyList,
 
-          image:
-            image
-              ? image.trim()
-              : "",
+          image: imageUpload?.secure_url || image?.trim() || "",
 
           liveUrl:
             liveUrl
@@ -595,10 +599,15 @@ router.put(
           technologies
         );
 
-      project.image =
-        image
-          ? image.trim()
-          : "";
+      const projectImage = req.files?.projectImage?.[0];
+
+      if (projectImage) {
+        const imageUpload =
+          await uploadToCloudinary(projectImage);
+        project.image = imageUpload.secure_url;
+      } else if (image !== undefined) {
+        project.image = image.trim();
+      }
 
       project.liveUrl =
         liveUrl
@@ -639,10 +648,9 @@ router.put(
       */
 
       if (
-        req.files &&
-        req.files.length > 0
+        req.files?.projectFiles?.length > 0
       ) {
-        for (const file of req.files) {
+        for (const file of req.files.projectFiles) {
           const result =
             await uploadToCloudinary(file);
 

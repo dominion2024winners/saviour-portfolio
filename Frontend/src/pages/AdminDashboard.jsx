@@ -200,6 +200,7 @@ function AdminDashboard() {
   const [contacts, setContacts] = useState([]);
   const [contactsLoading, setContactsLoading] = useState(true);
   const [form, setForm] = useState(emptyForm);
+  const [projectImageFile, setProjectImageFile] = useState(null);
   const [projectFiles, setProjectFiles] = useState([]);
   const [editingId, setEditingId] = useState(null);
 
@@ -1088,6 +1089,7 @@ function AdminDashboard() {
       return;
     }
 
+    setProjectImageFile(file);
     const reader = new FileReader();
 
     reader.onload = () => {
@@ -1167,6 +1169,7 @@ function AdminDashboard() {
       ...emptyForm,
     });
 
+    setProjectImageFile(null);
     setProjectFiles([]);
     setEditingId(null);
     setMessage("");
@@ -1230,10 +1233,13 @@ function AdminDashboard() {
         JSON.stringify(form.technologies)
       );
 
-      formData.append(
-        "image",
-        form.image.trim()
-      );
+      if (form.image && !form.image.startsWith("data:")) {
+        formData.append("image", form.image.trim());
+      }
+
+      if (projectImageFile) {
+        formData.append("projectImage", projectImageFile);
+      }
 
       formData.append(
         "liveUrl",
@@ -1338,6 +1344,7 @@ function AdminDashboard() {
         ...emptyForm,
       });
 
+      setProjectImageFile(null);
       setProjectFiles([]);
       setEditingId(null);
 
@@ -1407,6 +1414,7 @@ function AdminDashboard() {
         project.published !== false,
     });
 
+    setProjectImageFile(null);
     setProjectFiles([]);
 
     setMessage("");
