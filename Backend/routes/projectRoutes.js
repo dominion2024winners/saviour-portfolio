@@ -88,6 +88,29 @@ const parseTechnologies = (technologies) => {
     .filter(Boolean);
 };
 
+const handleProjectFileUpload = (req, res, next) => {
+  uploadProjectFiles.array("projectFiles", 10)(
+    req,
+    res,
+    (error) => {
+      if (!error) {
+        return next();
+      }
+
+      console.error("Project file upload error:", error.message);
+
+      const isFileTooLarge = error.code === "LIMIT_FILE_SIZE";
+
+      return res.status(isFileTooLarge ? 413 : 400).json({
+        success: false,
+        message: isFileTooLarge
+          ? "A project file exceeds the 250 MB size limit."
+          : error.message || "Invalid project file upload.",
+      });
+    }
+  );
+};
+
 /*
 ============================================================
 GET ALL PUBLISHED PROJECTS
@@ -355,7 +378,7 @@ router.post(
   "/",
   protect,
   adminOnly,
-  uploadProjectFiles.array("projectFiles", 10),
+  handleProjectFileUpload,
   async (req, res) => {
     try {
       const {
@@ -507,10 +530,7 @@ router.put(
   "/:id",
   protect,
   adminOnly,
-  uploadProjectFiles.array(
-    "projectFiles",
-    10
-  ),
+  handleProjectFileUpload,
   async (req, res) => {
     try {
       const project =

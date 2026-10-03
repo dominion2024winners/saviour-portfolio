@@ -1289,7 +1289,22 @@ function AdminDashboard() {
         }
       );
 
-      const data = await response.json();
+      const responseText = await response.text();
+      let data;
+
+      try {
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch {
+        if (!response.ok) {
+          throw new Error(
+            `Failed to save project (HTTP ${response.status}). The server returned a non-JSON response; check the backend logs.`
+          );
+        }
+
+        throw new Error(
+          "The server returned an invalid response while saving the project."
+        );
+      }
 
       if (!response.ok) {
         if (
