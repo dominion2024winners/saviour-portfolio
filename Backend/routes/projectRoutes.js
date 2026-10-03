@@ -23,7 +23,9 @@ const uploadToCloudinary = (file) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         folder: "portfolio/projects",
-        resource_type: "auto",
+        resource_type: file.mimetype.startsWith("image/")
+          ? "image"
+          : "raw",
       },
       (error, result) => {
         if (error) {
@@ -37,6 +39,69 @@ const uploadToCloudinary = (file) => {
 
     uploadStream.end(file.buffer);
   });
+};
+
+const getCloudinaryResourceType = (file) =>
+  file.url?.includes("/raw/upload/") ? "raw" : "image";
+
+const fetchProjectFile = async (file) => {
+  let upstream;
+
+  try {
+    upstream = await fetch(file.url);
+  } catch (error) {
+    console.error("Project file public URL fetch error:", error.message);
+  }
+
+  if (upstream?.ok && upstream.body) {
+    return upstream;
+  }
+
+  const extension = file.name?.split(".").pop();
+
+  if (!file.publicId || !extension || extension === file.name) {
+    return upstream;
+  }
+
+  const signedUrl = cloudinary.utils.private_download_url(
+    file.publicId,
+    extension.toLowerCase(),
+    {
+      resource_type: getCloudinaryResourceType(file),
+      type: "upload",
+      expires_at: Math.floor(Date.now() / 1000) + 60,
+    }
+  );
+
+  return fetch(signedUrl);
+};
+
+const setProjectFileResponseHeaders = (
+  res,
+  file,
+  upstream,
+  disposition
+) => {
+  const safeName = (file.name || "project-file")
+    .replace(/[\/\\\r\n"]/g, "_")
+    .trim() || "project-file";
+  const asciiName = safeName.replace(/[^\x20-\x7E]/g, "_");
+
+  res.setHeader(
+    "Content-Disposition",
+    `${disposition}; filename="${asciiName}"; filename*=UTF-8''${encodeURIComponent(safeName)}`
+  );
+  res.setHeader(
+    "Content-Type",
+    file.type || upstream.headers.get("content-type") || "application/octet-stream"
+  );
+  res.setHeader("X-Content-Type-Options", "nosniff");
+
+  const contentLength = upstream.headers.get("content-length");
+
+  if (contentLength) {
+    res.setHeader("Content-Length", contentLength);
+  }
 };
 
 /*
@@ -54,7 +119,7 @@ const deleteFromCloudinary = async (file) => {
     await cloudinary.uploader.destroy(
       file.publicId,
       {
-        resource_type: "raw",
+        resource_type: getCloudinaryResourceType(file),
       }
     );
   } catch (error) {
@@ -188,33 +253,22 @@ router.get("/:projectId/files/:fileId/download", async (req, res) => {
       });
     }
 
-    const upstream = await fetch(file.url);
+    const upstream = await fetchProjectFile(file);
 
-    if (!upstream.ok || !upstream.body) {
+    if (!upstream?.ok || !upstream.body) {
+      console.error(
+        "Project file download upstream error:",
+        upstream?.status,
+        file.url
+      );
+
       return res.status(502).json({
         success: false,
         message: "Project file is temporarily unavailable.",
       });
     }
 
-    const safeName = (file.name || "project-file")
-      .replace(/["\r\n]/g, "")
-      .trim() || "project-file";
-
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="${safeName}"`
-    );
-    res.setHeader(
-      "Content-Type",
-      file.type || upstream.headers.get("content-type") || "application/octet-stream"
-    );
-
-    const contentLength = upstream.headers.get("content-length");
-
-    if (contentLength) {
-      res.setHeader("Content-Length", contentLength);
-    }
+    setProjectFileResponseHeaders(res, file, upstream, "attachment");
 
     return Readable.fromWeb(upstream.body).pipe(res);
   } catch (error) {
@@ -255,33 +309,22 @@ router.get("/:projectId/files/:fileId/view", async (req, res) => {
       });
     }
 
-    const upstream = await fetch(file.url);
+    const upstream = await fetchProjectFile(file);
 
-    if (!upstream.ok || !upstream.body) {
+    if (!upstream?.ok || !upstream.body) {
+      console.error(
+        "Project file view upstream error:",
+        upstream?.status,
+        file.url
+      );
+
       return res.status(502).json({
         success: false,
         message: "Project file is temporarily unavailable.",
       });
     }
 
-    const safeName = (file.name || "project-file")
-      .replace(/["\r\n]/g, "")
-      .trim() || "project-file";
-
-    res.setHeader(
-      "Content-Disposition",
-      `inline; filename="${safeName}"`
-    );
-    res.setHeader(
-      "Content-Type",
-      file.type || upstream.headers.get("content-type") || "application/octet-stream"
-    );
-
-    const contentLength = upstream.headers.get("content-length");
-
-    if (contentLength) {
-      res.setHeader("Content-Length", contentLength);
-    }
+    setProjectFileResponseHeaders(res, file, upstream, "inline");
 
     return Readable.fromWeb(upstream.body).pipe(res);
   } catch (error) {
