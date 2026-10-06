@@ -315,6 +315,7 @@ function AdminDashboard() {
       if (!token) {
         setError("Your admin session has expired. Please login again.");
         setOfflineMode(true);
+        setProjects([]);
         return;
       }
 
@@ -335,6 +336,11 @@ function AdminDashboard() {
           localStorage.removeItem("adminToken");
           setOfflineMode(true);
           setProjects([]);
+          setError(
+            response.status === 401
+              ? "Your admin session has expired. Please login again."
+              : "Your admin account is not authorized to view projects."
+          );
           return;
         }
 

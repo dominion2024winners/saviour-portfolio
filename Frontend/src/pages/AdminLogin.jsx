@@ -71,26 +71,6 @@ function AdminLogin() {
         return;
       }
 
-      const storedCredentials = JSON.parse(
-        localStorage.getItem("portfolioAdminCredentials") || "{}"
-      );
-
-      const fallbackEmail = storedCredentials.email || "admin@portfolio.com";
-      const fallbackPassword = storedCredentials.password || "admin123";
-
-      if (
-        formData.email.trim().toLowerCase() === fallbackEmail.trim().toLowerCase() &&
-        formData.password === fallbackPassword
-      ) {
-        localStorage.setItem("adminToken", "local-admin-token");
-        localStorage.setItem(
-          "admin",
-          JSON.stringify({ email: fallbackEmail, role: "admin" })
-        );
-        navigate("/admin");
-        return;
-      }
-
       throw new Error(
         data.message || "Invalid email or password."
       );
