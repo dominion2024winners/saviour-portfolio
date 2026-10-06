@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 const readStorage = (key, fallback) => {
   try {
     const value = localStorage.getItem(key);
@@ -21,10 +24,51 @@ function Testimonials() {
   const [testimonials, setTestimonials] = useState(() =>
     readAdminTestimonials()
   );
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
-    setTestimonials(readAdminTestimonials());
+    let isMounted = true;
+
+    const loadTestimonials = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/testimonials`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Failed to load testimonials.");
+        }
+
+        if (isMounted) {
+          const sharedTestimonials = (data.testimonials || []).map((item) => ({
+            ...item,
+            id: item.clientId || item.id || item._id,
+          }));
+          setTestimonials(
+            sharedTestimonials.length > 0
+              ? sharedTestimonials
+              : readAdminTestimonials()
+          );
+        }
+      } catch (error) {
+        console.error("Load testimonials error:", error);
+
+        if (isMounted) {
+          setLoadError(error.message || "Failed to load testimonials.");
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadTestimonials();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (
@@ -40,9 +84,13 @@ function Testimonials() {
           </p>
         </div>
 
-        {testimonials.length === 0 ? (
+        {loading && testimonials.length === 0 ? (
           <div className="blog-empty testimonial-empty">
-            No testimonials added yet.
+            Loading testimonials…
+          </div>
+        ) : testimonials.length === 0 ? (
+          <div className="blog-empty testimonial-empty">
+            {loadError || "No testimonials added yet."}
           </div>
         ) : (
           <>

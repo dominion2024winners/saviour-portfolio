@@ -419,6 +419,72 @@ function AdminDashboard() {
     }
   };
 
+  const loadTestimonials = async () => {
+    const token = getToken();
+
+    if (!token) {
+      return;
+    }
+
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      const response = await fetch(`${API_URL}/api/testimonials/admin/all`, {
+        headers,
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to load testimonials.");
+      }
+
+      const storedTestimonials = readAdminTestimonials();
+      const savedIds = new Set(
+        (data.testimonials || []).map((item) => item.clientId)
+      );
+      const unsyncedTestimonials = storedTestimonials.filter(
+        (item) => !savedIds.has(item.id || item.clientId)
+      );
+
+      for (const item of unsyncedTestimonials) {
+        const id = item.id || item.clientId || item._id;
+        const syncResponse = await fetch(`${API_URL}/api/testimonials`, {
+          method: "POST",
+          headers: {
+            ...headers,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ ...item, id }),
+        });
+        const syncData = await syncResponse.json();
+
+        if (!syncResponse.ok) {
+          throw new Error(syncData.message || "Failed to sync saved testimonials.");
+        }
+      }
+
+      const refreshedResponse = unsyncedTestimonials.length
+        ? await fetch(`${API_URL}/api/testimonials/admin/all`, { headers })
+        : response;
+      const refreshedData = unsyncedTestimonials.length
+        ? await refreshedResponse.json()
+        : data;
+
+      if (!refreshedResponse.ok) {
+        throw new Error(refreshedData.message || "Failed to reload testimonials.");
+      }
+
+      setTestimonials(
+        (refreshedData.testimonials || []).map((item) => ({
+          ...item,
+          id: item.clientId || item.id || item._id,
+        }))
+      );
+    } catch (err) {
+      console.error("Load testimonials error:", err);
+      setError(err.message || "Failed to load testimonials.");
+    }
+  };
+
   const loadAnalytics = async () => {
     const token = getToken();
 
@@ -761,6 +827,7 @@ function AdminDashboard() {
     loadProfile();
     loadContacts();
     loadBlogPosts();
+    loadTestimonials();
     loadAnalytics();
   }, []);
 
@@ -1748,7 +1815,7 @@ function AdminDashboard() {
     }));
   };
 
-  const saveTestimonial = () => {
+  const saveTestimonial = async () => {
     const name = testimonialForm.name.trim();
     const role = testimonialForm.role.trim();
     const quote = testimonialForm.quote.trim();
@@ -1759,31 +1826,51 @@ function AdminDashboard() {
       return;
     }
 
-    if (testimonialForm.id) {
-      setTestimonials((current) =>
-        current.map((item) =>
-          item.id === testimonialForm.id
-            ? { ...item, name, role, quote, rating }
-            : item
-        )
-      );
-      setMessage("Testimonial updated successfully.");
-    } else {
-      setTestimonials((current) => [
-        {
-          id: `testimonial-${Date.now()}`,
-          name,
-          role,
-          quote,
-          rating,
-        },
-        ...current,
-      ]);
-      setMessage("Testimonial added successfully.");
-    }
+    const token = getToken();
+    const id = testimonialForm.id || `testimonial-${Date.now()}`;
 
-    setTestimonialForm({ id: "", name: "", role: "", quote: "", rating: 5 });
-    setError("");
+    try {
+      if (!token) {
+        throw new Error("Admin session unavailable. Please log in again.");
+      }
+
+      const isEditing = Boolean(testimonialForm.id);
+      const response = await fetch(
+        isEditing
+          ? `${API_URL}/api/testimonials/${encodeURIComponent(id)}`
+          : `${API_URL}/api/testimonials`,
+        {
+          method: isEditing ? "PUT" : "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id, name, role, quote, rating }),
+        }
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to save testimonial.");
+      }
+
+      const savedTestimonial = {
+        ...data.testimonial,
+        id: data.testimonial.clientId,
+      };
+
+      setTestimonials((current) =>
+        isEditing
+          ? current.map((item) => (item.id === id ? savedTestimonial : item))
+          : [savedTestimonial, ...current]
+      );
+      setMessage(isEditing ? "Testimonial updated successfully." : "Testimonial added successfully.");
+      setTestimonialForm({ id: "", name: "", role: "", quote: "", rating: 5 });
+      setError("");
+    } catch (err) {
+      console.error("Save testimonial error:", err);
+      setError(err.message || "Failed to save testimonial.");
+    }
   };
 
   const editTestimonial = (testimonial) => {
@@ -1797,12 +1884,36 @@ function AdminDashboard() {
     setActiveMenu("testimonials");
   };
 
-  const deleteTestimonial = (id) => {
-    setTestimonials((current) =>
-      current.filter((testimonial) => testimonial.id !== id)
-    );
-    setMessage("Testimonial removed.");
-    setError("");
+  const deleteTestimonial = async (id) => {
+    try {
+      const token = getToken();
+
+      if (!token) {
+        throw new Error("Admin session unavailable. Please log in again.");
+      }
+
+      const response = await fetch(
+        `${API_URL}/api/testimonials/${encodeURIComponent(id)}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to delete testimonial.");
+      }
+
+      setTestimonials((current) =>
+        current.filter((testimonial) => testimonial.id !== id)
+      );
+      setMessage("Testimonial removed.");
+      setError("");
+    } catch (err) {
+      console.error("Delete testimonial error:", err);
+      setError(err.message || "Failed to delete testimonial.");
+    }
   };
 
   const handleBlogFormChange = (event) => {

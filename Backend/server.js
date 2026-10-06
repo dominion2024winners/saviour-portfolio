@@ -33,6 +33,7 @@ const profileRoutes = require("./routes/profileRoutes");
 const blogRoutes = require("./routes/blogRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
 const newsletterRoutes = require("./routes/newsletterRoutes");
+const testimonialRoutes = require("./routes/testimonialRoutes");
 
 const PORT = process.env.PORT || 5000;
 const frontendUrl = (
@@ -108,6 +109,7 @@ app.use("/api/blog", blogRoutes);
 
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/newsletter", newsletterRoutes);
+app.use("/api/testimonials", testimonialRoutes);
 
 // ============================================================
 // HEALTH CHECK
