@@ -70,12 +70,9 @@ function Navbar() {
             {t("services")}
           </a>
 
-          <a href="#contact" onClick={closeMenu}>
-            {t("contact")}
-          </a>
         </nav>
 
-        <a href="#contact" className="navbar-button">
+        <a href="#contact" className="navbar-button" onClick={closeMenu}>
           {t("letsTalk")}
         </a>
 
